@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:mynotes/views/login_view.dart';
 import 'package:mynotes/views/register_view.dart';
 import 'package:mynotes/views/verify_email_view.dart';
-import 'dart:developer' as devtools show log;
 import 'firebase_options.dart';
 
 void main() {
@@ -17,8 +16,9 @@ void main() {
     ),
     home: const HomePage(),
     routes: {
-      '/login': (context) => const LoginView(),
-      '/register': (context) => const RegisterView(),
+      '/login/': (context) => const LoginView(),
+      '/register/': (context) => const RegisterView(),
+      '/notes/': (context) => const NotesView(),
     },
   ));
 }
@@ -75,8 +75,12 @@ class _NotesViewState extends State<NotesView> {
                   final shouldLogout = await showLogOutDialog(context);
                   if (shouldLogout) {
                     await FirebaseAuth.instance.signOut();
-                    Navigator.of(context)
-                        .pushNamedAndRemoveUntil('/login', (_) => false);
+                    Navigator.of(context).pushNamedAndRemoveUntil(
+                      '/login/',
+                      (route) {
+                        return shouldLogout;
+                      },
+                    );
                   }
               }
             },
@@ -105,21 +109,23 @@ Future<bool> showLogOutDialog(BuildContext context) {
         content: const Text('Are you sure you want to sign out?'),
         actions: [
           TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(false);
-              },
-              child: const Text('Cancel')),
+            onPressed: () {
+              Navigator.of(context).pop(false);
+            },
+            child: const Text('Cancel'),
+          ),
           TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(true);
-              },
-              child: const Text('Log Out')),
+            onPressed: () {
+              Navigator.of(context).pop(true);
+            },
+            child: const Text('Log Out'),
+          ),
         ],
       );
     },
   ).then(
     (value) {
-      return value ?? false;
+      return value == null ? false : value;
     },
   );
 }
